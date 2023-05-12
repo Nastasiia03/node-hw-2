@@ -1,15 +1,15 @@
 const express = require('express')
 const Joi = require("joi");
 
-const contactsService = require("../../models/contacts");
+const contactsService = require("../../models/contacts.js");
 const { HttpError } = require("../../helpers"); 
 
 const router = express.Router()
 
 const contactAddSchema = Joi.object({
-  name: Joi.string().required(),
-  email: Joi.string().required(),
-phone: Joi.string().required()
+  name: Joi.string().min(2).required(),
+  email: Joi.string().email().required(),
+phone: Joi.string().pattern(/^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?$/).required()
 })
 
 router.get('/', async (req, res, next) => {
@@ -27,7 +27,7 @@ router.get('/:contactId', async (req, res, next) => {
     const { contactId } = req.params;
     const result = await contactsService.getContactById(contactId);
     if (!result) {
-      throw HttpError(404, `Contact with ${contactId} not found`);
+      throw HttpError(404, "Not found");
     }
     res.json(result);
   }
@@ -42,8 +42,8 @@ router.post('/', async (req, res, next) => {
     if (error) {
       throw HttpError(400, error.message);
     }
-    // const { name, email, phone } = req.body;
-    const result = contactsService.addContact(req.body);
+    
+    const result = await contactsService.addContact(req.body);
     res.status(201).json(result);
     console.log(req.body)
   }
@@ -57,10 +57,10 @@ router.delete('/:contactId', async (req, res, next) => {
     const { contactId } = req.params;
     const result = await contactsService.removeContact(contactId);
     if (!result) {
-      throw HttpError(404, `Contact with ${contactId} not found`);
+      throw HttpError(404, "Not found");
     }
     res.json({
-      message: "Delete success"
+      message: "Contact deleted"
     })
   } 
   catch (error) {
@@ -74,10 +74,16 @@ router.put('/:contactId', async (req, res, next) => {
     if (error) {
       throw HttpError(400, error.message);
     }
+    const { contactId } = req.params;
+    const result = await contactsService.updateContact(contactId, req.body);
+    if (!result) {
+      throw HttpError(404, "Not found");
+    }
+    res.json(result);
   }
   catch (error) {
     next(error);
   }
 })
 
-module.exports = router
+module.exports = router;

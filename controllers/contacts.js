@@ -1,12 +1,15 @@
 const Contact = require("../models/contact");
 
-const { HttpError, contactAddSchema, updateFavoriteSchema } = require("../helpers");
+const { HttpError} = require("../helpers");
 
 const ctrlWrapper = require("../decorators/ctrlWrapper");
 
 
 const getAllContacts = async (req, res) => {
-    const result = await Contact.find();
+  const { _id: owner } = req.user;
+  const { page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit; 
+    const result = await Contact.find({owner, favorite: true}, "", {skip, limit}).populate("owner", "email subscription");
     res.json(result);
 }
 
@@ -20,11 +23,8 @@ const getContactById = async (req, res, next) => {
 }
 
   const addContact = async (req, res, next) => {
-      const { error } = contactAddSchema.validate(req.body);
-      if (error) {
-        throw new HttpError(400, error.message);
-      }
-      const result = await Contact.create(req.body);
+    const { _id: owner } = req.user;
+    const result = await Contact.create({ ...req.body, owner });
       res.status(201).json(result);
     }; 
 
@@ -40,10 +40,6 @@ const removeContact = async (req, res, next) => {
 };
 
 const updateContact = async (req, res, next) => {
-  const { error } = contactAddSchema.validate(req.body);
-  if (error) {
-    throw new HttpError(400, error.message);
-  }
   const { contactId } = req.params;
   const result = await Contact.findByIdAndUpdate(contactId, req.body, { new: true });
   if (!result) {
@@ -53,10 +49,6 @@ const updateContact = async (req, res, next) => {
 };
 
 const updateStatusContact = async (req, res, next) => {
-  const { error } = updateFavoriteSchema.validate(req.body);
-  if (error) {
-    throw new HttpError(400, error.message);
-  }
   const { contactId } = req.params;
   const result = await Contact.findByIdAndUpdate(contactId, req.body, { new: true });
   if (!result) {

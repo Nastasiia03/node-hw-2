@@ -1,5 +1,5 @@
 const HttpError = require("./HttpError");
-const { contactAddSchema, updateFavoriteSchema } = require("./validation");
+const schemas = require("./validation");
 
 
-module.exports = { HttpError, contactAddSchema, updateFavoriteSchema };
+module.exports = { HttpError, schemas };

@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 
-const UKR_NET_PASSWORD = "1YTSOxqjANGpealc"; 
-const UKR_NET_EMAIL = "abernatska@ukr.net";
+const UKR_NET_PASSWORD = "OfaNnBmMugGKP3jZ"; 
+const UKR_NET_EMAIL = "abernat@ukr.net";
 
 const nodemailerConfig = {
     host: "smtp.ukr.net",
